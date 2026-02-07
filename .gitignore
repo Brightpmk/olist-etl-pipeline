@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.env
+.venv
+olist-etl/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+logs/
+
+# Database / generated files
+data/processed/
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
