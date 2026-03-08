@@ -1,202 +1,285 @@
-# 🏗️ Olist E-commerce ETL Pipeline (Data Engineering Project)
+# Olist E-commerce ETL Pipeline
 
-## 📌 Project Overview
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Processing-green)
+![SQL](https://img.shields.io/badge/SQL-SQLite-orange)
+![SQLite](https://img.shields.io/badge/SQLite-Database-lightgrey)
+![ETL](https://img.shields.io/badge/Data%20Engineering-ETL-blueviolet)
 
-This project demonstrates a **Data Engineering ETL pipeline** built on top of the
-**Olist Brazilian E-commerce Dataset**.
+## Project Overview
 
-The main objective is to design and implement an end-to-end pipeline that:
-- Extracts raw CSV data
-- Cleans and validates data
-- Loads structured data into a relational database
-- Produces analytics-ready tables for downstream analysis
+This project implements an end-to-end **ETL (Extract, Transform, Load) pipeline** on top of the **Olist Brazilian E-commerce dataset**.
 
-The project emphasizes **data pipeline design, schema consistency, and reproducibility**
-rather than purely exploratory analysis.
+The pipeline reads raw CSV files, cleans and standardizes selected fields, creates a fact table for analytics, and loads the processed data into a **SQLite** database. The project is designed to demonstrate core **data engineering practices** such as modular pipeline design, reproducible execution, schema-driven loading, and basic data quality validation.
 
 ---
 
-## 🎯 Project Goals
+## Objectives
 
-- Build a reusable and idempotent ETL pipeline
-- Separate concerns between extract, transform, and load stages
-- Enforce basic data quality checks and schema validation
-- Prepare fact tables suitable for analytical SQL queries
-
----
-
-## 📊 Dataset
-
-**Olist Brazilian E-commerce Dataset**
-
-Source tables used:
-- `olist_customers_dataset`
-- `olist_orders_dataset`
-- `olist_order_items_dataset`
-- `olist_order_payments_dataset`
-- `olist_order_reviews_dataset`
-- `olist_products_dataset`
-- `olist_sellers_dataset`
-- `product_category_name_translation`
-
-The dataset represents real-world transactional data from a Brazilian online marketplace
-and contains multiple relational dependencies (primary and foreign keys).
+- Extract multiple relational CSV files from the Olist dataset
+- Clean and standardize raw transactional data
+- Load structured tables into SQLite using a predefined schema
+- Build an analytics-ready fact table for SQL analysis
+- Apply basic validation checks for data consistency
 
 ---
 
-## 🧱 Project Architecture
+## Dataset
 
-```
-Raw CSV files
-     ↓
-Extract (pandas)
-     ↓
-Transform (cleaning, validation, enrichment)
-     ↓
-Load (SQLite)
-     ↓
-Analytics-ready tables
-```
+This repository uses **8 raw CSV files** stored in `data/raw/`:
+
+- `olist_customers_dataset.csv`
+- `olist_orders_dataset.csv`
+- `olist_order_items_dataset.csv`
+- `olist_order_payments_dataset.csv`
+- `olist_order_reviews_dataset.csv`
+- `olist_products_dataset.csv`
+- `olist_sellers_dataset.csv`
+- `product_category_name_translation.csv`
+
+These files represent a relational e-commerce dataset containing customers, orders, products, sellers, payments, reviews, and category translation data.
 
 ---
 
-## 📁 Project Structure
+## Architecture
 
 ```text
-olist-etl-pipeline/
-├── data/
-│   ├── raw/                    # Original CSV datasets
-│   └── processed/              # Generated SQLite database
-├── etl/
-│   ├── extract.py              # Data ingestion from CSV
-│   ├── transform.py            # Data cleaning and feature engineering
-│   ├── load.py                 # Load cleaned data into database
-│   ├── validate.py             # Data quality checks
-│   └── logger.py               # Centralized logging
-├── db/
-│   ├── schema.sql              # Database schema definitions
-│   └── init_db.py              # Database initialization
+           Raw CSV files
+                │
+                ▼
+        +----------------+
+        |    Extract     |
+        | read_csv()     |
+        +----------------+
+                │
+                ▼
+        +----------------+
+        |   Transform    |
+        | deduplicate    |
+        | type cleaning  |
+        | datetime clean |
+        +----------------+
+                │
+                ▼
+        +----------------+
+        |   Validate     |
+        | PK null checks |
+        | FK checks      |
+        | non-negative   |
+        +----------------+
+                │
+                ▼
+        +----------------+
+        |     Load       |
+        | SQLite schema  |
+        | append tables  |
+        +----------------+
+                │
+                ▼
+        Analytics-ready database
+```
+
+---
+
+## Tech Stack
+
+- **Python 3.11**
+- **Pandas**
+- **NumPy**
+- **PyYAML**
+- **SQLite**
+- **SQLAlchemy** (listed in dependencies)
+
+---
+
+## Repository Structure
+
+```text
+olist-etl-pipeline-main/
 ├── config/
-│   └── config.yaml             # Paths and table configuration
+│   └── config.yaml              # Paths and source file mapping
+├── data/
+│   └── raw/                     # Raw Olist CSV files
+├── db/
+│   ├── init_db.py               # Initializes SQLite database from schema
+│   └── schema.sql               # Table definitions
+├── etl/
+│   ├── extract.py               # Reads CSV files into pandas DataFrames
+│   ├── transform.py             # Cleans data and builds fact table
+│   ├── load.py                  # Loads cleaned tables into SQLite
+│   ├── validate.py              # Basic validation checks
+│   └── logger.py                # File + console logging
 ├── logs/
-│   └── etl.log                 # ETL execution logs
-├── main.py                     # Pipeline entry point
+│   └── etl.log                  # Generated at runtime
+├── main.py                      # Pipeline entry point
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 🔄 ETL Pipeline Details
+## ETL Workflow
 
 ### 1. Extract
-- Reads raw CSV files using pandas
-- Performs no mutation at this stage
-- Fails fast if any required file is missing
+The pipeline reads all required CSV files defined in `config/config.yaml`.
+
+Source-to-key mapping used by the pipeline:
+
+- `customers` → `olist_customers_dataset.csv`
+- `orders` → `olist_orders_dataset.csv`
+- `order_items` → `olist_order_items_dataset.csv`
+- `order_payments` → `olist_order_payments_dataset.csv`
+- `order_reviews` → `olist_order_reviews_dataset.csv`
+- `products` → `olist_products_dataset.csv`
+- `sellers` → `olist_sellers_dataset.csv`
+- `category_translation` → `product_category_name_translation.csv`
+
+If any required file is missing, the pipeline raises a `FileNotFoundError`.
 
 ### 2. Transform
-- Removes duplicate records
-- Converts timestamps into a standardized ISO format
-- Sanitizes numeric fields
-- Enforces basic data validation rules
-- Builds an analytics-ready fact table:
-  - `fact_order_item_sales`
+The transformation step performs the following operations:
 
-### 3. Load
-- Initializes database schema using SQL
-- Loads cleaned data into SQLite
-- Supports repeatable execution (pipeline can be rerun safely)
+- Removes duplicates from source tables using table-specific keys
+- Converts datetime columns to `YYYY-MM-DD HH:MM:SS`
+- Converts numeric columns such as `price`, `freight_value`, and `payment_value`
+- Preserves cleaned versions of source tables
+- Builds an analytics-ready fact table named `fact_order_item_sales`
 
----
+### 3. Validate
+The validation step checks:
 
-## 📈 Fact Table Example
+- `customer_id` in `customers` is not null
+- `order_id` in `orders` is not null
+- all `orders.customer_id` values exist in `customers`
+- `price` and `freight_value` in `order_items` are not negative
 
-**fact_order_item_sales**
-- order_id
-- order_item_id
-- seller_id
-- product_id
-- product_category_name_english
-- order_purchase_timestamp
-- price
-- freight_value
-- revenue
+### 4. Load
+The pipeline:
 
-This table is designed specifically for analytical queries such as:
-- Revenue by category
-- Revenue trends over time
-- Seller and product performance
+- initializes the SQLite database from `db/schema.sql`
+- clears existing table contents in a dependency-safe order
+- inserts cleaned tables into SQLite
+- writes the output database to `data/processed/olist.db`
 
 ---
 
-## ▶ How to Run
+## Output Tables
 
-### 1. Create environment
+The database schema includes cleaned relational tables:
+
+- `customers`
+- `orders`
+- `order_items`
+- `order_payments`
+- `order_reviews`
+- `products`
+- `sellers`
+- `category_translation`
+
+It also includes one analytics table:
+
+- `fact_order_item_sales`
+
+### fact_order_item_sales columns
+
+- `order_id`
+- `order_item_id`
+- `seller_id`
+- `product_id`
+- `product_category_name_english`
+- `order_purchase_timestamp`
+- `price`
+- `freight_value`
+- `revenue`
+
+`revenue` is computed as:
+
+```text
+price + freight_value
+```
+
+This fact table is created by joining:
+
+- `order_items`
+- `orders`
+- `products`
+- `category_translation`
+
+---
+
+## How to Run
+
+### 1. Install dependencies
+
 ```bash
-conda create -n olist-etl python=3.11 -y
-conda activate olist-etl
 pip install -r requirements.txt
 ```
 
-### 2. Place raw data
-Copy all dataset CSV files into:
-```
+### 2. Make sure raw files exist in:
+
+```text
 data/raw/
 ```
 
-### 3. Run ETL pipeline
+### 3. Run the pipeline
+
 ```bash
 python main.py
 ```
 
-After execution, the SQLite database will be available at:
-```
-data/processed/olist.db
-```
+### 4. Output
+After a successful run:
+
+- database file: `data/processed/olist.db`
+- log file: `logs/etl.log`
 
 ---
 
-## 🧪 Example SQL Query
+## Example SQL Query
 
 ```sql
 SELECT
-  product_category_name_english,
-  ROUND(SUM(revenue), 2) AS total_revenue
+    product_category_name_english,
+    ROUND(SUM(revenue), 2) AS total_revenue
 FROM fact_order_item_sales
-GROUP BY 1
+GROUP BY product_category_name_english
 ORDER BY total_revenue DESC
 LIMIT 10;
 ```
 
 ---
 
-## 🤖 Use of AI Assistance
+## Skills Demonstrated
 
-AI tools (including large language models) were used as a **development aid** for:
-- Structuring the ETL workflow
-- Reviewing schema design
-- Improving code organization and readability
-- Debugging and refining pipeline logic
-
-All architectural decisions, validation logic, and final implementations were
-**reviewed, understood, and manually integrated** by the author.
-
-AI was used as a productivity and learning tool, not as a replacement for
-data engineering decision-making.
+- ETL pipeline design
+- Relational data handling
+- Data cleaning with pandas
+- Schema-based loading into SQLite
+- Basic data quality validation
+- Fact table construction for analytics
+- Project organization for maintainability
 
 ---
 
-## 🚀 Future Improvements
+## Notes
 
-- Incremental loading strategy
-- Migration to PostgreSQL
-- Orchestration using Airflow
-- Advanced data quality checks
-- CI/CD integration for pipeline testing
+- The pipeline is **rerunnable** because tables are cleared before each load.
+- Logging is written to both the console and `logs/etl.log`.
+- Validation currently covers a small set of core checks and can be extended further.
 
 ---
 
-## 👤 Author
+## Future Improvements
 
-Bright  
-Computer Engineering Student  
+- Add unit tests for each ETL stage
+- Add stronger schema and null validation
+- Add incremental loading support
+- Migrate storage from SQLite to PostgreSQL
+- Add orchestration with Airflow or Prefect
+
+---
+
+## Author
+
+**Bright**  
+Computer Engineering Student
