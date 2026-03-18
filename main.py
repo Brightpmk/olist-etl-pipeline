@@ -27,13 +27,14 @@ def main():
     logger.info("Transforming data")
     cleaned = transform(dfs)
 
+    logger.info("Validating data")
+    validate(cleaned)
+    
     logger.info("Loading data into SQLite")
     load_to_sqlite(db_path=db_path, cleaned=cleaned)
 
     logger.info("ETL pipeline completed successfully")
     
-    logger.info("Validating data")
-    validate(cleaned)
 
 
 if __name__ == "__main__":

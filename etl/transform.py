@@ -35,10 +35,6 @@ def build_fact_order_item_sales(cleaned: dict):
           .merge(ct, on="product_category_name", how="left")
     )
 
-    df = df.rename(
-        columns={"product_category_name_english": "product_category_name_english"}
-    )
-
     df["revenue"] = df["price"] + df["freight_value"]
 
     # 🔑 เลือก column ให้ตรง schema
