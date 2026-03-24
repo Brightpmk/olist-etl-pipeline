@@ -6,6 +6,7 @@ from etl.load import load_to_sqlite
 from etl.logger import setup_logger
 from etl.transform import transform
 from etl.validate import validate
+from etl.report import build_quality_report, save_quality_report
 
 
 def _log_table_counts(logger, title: str, dfs: dict) -> None:
@@ -23,6 +24,7 @@ def main():
     raw_dir = cfg["paths"]["raw_dir"]
     db_path = cfg["paths"]["db_path"]
     tables = cfg["tables"]
+    quality_report_path = cfg["paths"]["quality_report_path"]
 
     logger.info("Starting ETL pipeline")
 
@@ -41,6 +43,11 @@ def main():
     validate(cleaned)
     logger.info("Validation passed")
 
+    logger.info("Building data quality report")
+    report = build_quality_report(dfs, cleaned)
+    save_quality_report(report, quality_report_path)
+    logger.info("Saved data quality report to %s", quality_report_path)
+    
     logger.info("Loading data into SQLite")
     load_to_sqlite(db_path=db_path, cleaned=cleaned)
 

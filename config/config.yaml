@@ -2,6 +2,7 @@ paths:
   raw_dir: data/raw
   processed_dir: data/processed
   db_path: data/processed/olist.db
+  quality_report_path: data/processed/data_quality_report.json
 
 tables:
   customers: olist_customers_dataset.csv
