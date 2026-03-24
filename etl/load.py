@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import sqlite3
 import pandas as pd
 from typing import Dict
+
 
 def load_to_sqlite(db_path: str, cleaned: Dict[str, pd.DataFrame]) -> None:
     con = sqlite3.connect(db_path)
@@ -9,8 +11,8 @@ def load_to_sqlite(db_path: str, cleaned: Dict[str, pd.DataFrame]) -> None:
         con.execute("PRAGMA foreign_keys = ON;")
         cur = con.cursor()
 
-        # delete order matters because of FK
         delete_order = [
+            "fact_order_item_sales",
             "order_items",
             "order_payments",
             "order_reviews",
@@ -19,13 +21,11 @@ def load_to_sqlite(db_path: str, cleaned: Dict[str, pd.DataFrame]) -> None:
             "products",
             "sellers",
             "category_translation",
-            "fact_order_item_sales",
         ]
-        for t in delete_order:
-            cur.execute(f"DELETE FROM {t};")
-        con.commit()
 
-        # insert order: parents first
+        for table_name in delete_order:
+            cur.execute(f"DELETE FROM {table_name};")
+
         insert_order = [
             "customers",
             "products",
@@ -38,8 +38,8 @@ def load_to_sqlite(db_path: str, cleaned: Dict[str, pd.DataFrame]) -> None:
             "fact_order_item_sales",
         ]
 
-        for t in insert_order:
-            cleaned[t].to_sql(t, con, if_exists="append", index=False)
+        for table_name in insert_order:
+            cleaned[table_name].to_sql(table_name, con, if_exists="append", index=False)
 
         con.commit()
     finally:
