@@ -10,6 +10,7 @@
 ![SQL](https://img.shields.io/badge/SQL-SQLite-orange)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-lightgrey)
 ![ETL](https://img.shields.io/badge/Data%20Engineering-ETL-blueviolet)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Project Overview
 
@@ -288,3 +289,9 @@ LIMIT 10;
 
 **Bright**  
 Computer Engineering Student
+
+---
+
+## License
+
+MIT License
