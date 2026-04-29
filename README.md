@@ -1,4 +1,9 @@
-# Olist E-commerce ETL Pipeline
+# Olist E-commerce ETL Pipeline (ARCHIVED)
+
+> [!IMPORTANT]
+> **This project has been MERGED into a new unified platform.**
+>
+> This repository is now archived. The functionality of this project (ETL, validation, and loading) has been combined with others to create the [**Olist E-commerce Analytics Platform**](../mix/olist-ecommerce-platform/README.md).
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![Pandas](https://img.shields.io/badge/Pandas-Data%20Processing-green)
